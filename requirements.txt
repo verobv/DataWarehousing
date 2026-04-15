@@ -1,0 +1,6 @@
+pandas
+numpy
+sentence-transformers
+chromadb
+requests
+kaggle
