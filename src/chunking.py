@@ -30,7 +30,7 @@ def create_monthly_docs(df):
     }).reset_index()
 
     return monthly.apply(lambda row: (
-        f"In {row['year']}-{row['month']:02d}, sales were ${row['sales']:.2f} "
+        f"In {int(row['year'])}-{int(row['month']):02d}, sales were ${row['sales']:.2f} "
         f"and profit was ${row['profit']:.2f}."
     ), axis=1).tolist()
 
