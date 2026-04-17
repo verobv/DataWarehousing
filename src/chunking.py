@@ -1,4 +1,5 @@
 import pandas as pd
+import json
 
 # -------------------------
 # Load data
@@ -67,6 +68,9 @@ def run():
     all_docs = row_docs + monthly_docs
 
     chunked_docs = apply_chunking(all_docs)
+
+    with open("data/docs.json", "w") as f:
+        json.dump(chunked_docs, f)
 
     return chunked_docs
 

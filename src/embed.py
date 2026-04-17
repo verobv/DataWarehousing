@@ -4,6 +4,7 @@ from sentence_transformers import SentenceTransformer
 import chromadb
 from chromadb.config import Settings
 from chunking import run as get_docs
+import json
 
 # -------------------------
 # CONFIG
@@ -86,7 +87,15 @@ def store_embeddings(client, docs, embeddings):
 def run():
     logging.info("Stage 3: Embeddings & Vector Store")
 
-    docs = get_docs()
+    if os.path.exists("data/docs.json"):
+        with open("data/docs.json", "r") as f:
+            docs = json.load(f)
+    else:
+        docs = get_docs()
+
+        with open("data/docs.json", "w") as f:
+            json.dump(docs, f)
+            
     logging.info(f"Received {len(docs)} chunked documents from Stage 2.")
 
     model = load_model()
