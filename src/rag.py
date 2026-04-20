@@ -3,18 +3,6 @@ from sentence_transformers import SentenceTransformer
 import chromadb
 import ollama
 
-def add_in_batches(collection, docs, embeddings, batch_size=1000):
-    for i in range(0, len(docs), batch_size):
-        batch_docs = docs[i:i + batch_size]
-        batch_embeddings = embeddings[i:i + batch_size]
-        batch_ids = [str(j) for j in range(i, i + len(batch_docs))]
-
-        collection.add(
-            documents=batch_docs,
-            embeddings=batch_embeddings,
-            ids=batch_ids
-        )
-
 # 1. Load data
 df = pd.read_csv("data/processed/superstore_cleaned.csv")
 
@@ -32,33 +20,50 @@ embeddings = model.encode(docs).tolist()
 client = chromadb.Client()
 collection = client.create_collection("sales")
 
+def add_in_batches(collection, docs, embeddings, batch_size=1000):
+    for i in range(0, len(docs), batch_size):
+        batch_docs = docs[i:i + batch_size]
+        batch_embeddings = embeddings[i:i + batch_size]
+        batch_ids = [str(j) for j in range(i, i + len(batch_docs))]
+
+        collection.add(
+            documents=batch_docs,
+            embeddings=batch_embeddings,
+            ids=batch_ids
+        )
+
 add_in_batches(collection, docs, embeddings)
 
-# 5. Query
-query = "Which region has the highest sales?"
-query_emb = model.encode([query]).tolist()
+def rag_query(query: str) -> str:
 
-results = collection.query(
-    query_embeddings=query_emb,
-    n_results=5
-)
+    # 5. Query
+    query_emb = model.encode([query]).tolist()
 
-context = "\n".join(results["documents"][0])
+    results = collection.query(
+        query_embeddings=query_emb,
+        n_results=5
+    )
 
-# 6. LLM (Ollama)
-prompt = f"""
-Answer the question using ONLY the context.
+    context = "\n".join(results["documents"][0])
 
-Context:
-{context}
+    # 6. LLM (Ollama)
+    prompt = f"""
+    Answer the question using ONLY the context.
 
-Question:
-{query}
-"""
+    Context:
+    {context}
 
-response = ollama.chat(
-    model="phi3",
-    messages=[{"role": "user", "content": prompt}]
-)
+    Question:
+    {query}
+    """
 
-print(response["message"]["content"])
+    response = ollama.chat(
+        model="phi3",
+        messages=[{"role": "user", "content": prompt}]
+    )
+
+    answer = response["message"]["content"]
+
+    print(answer)
+
+    return answer
