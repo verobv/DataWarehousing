@@ -104,7 +104,7 @@ pip install -r requirements.txt
 Or manually:
 
 ```
-pip install pandas numpy sentence-transformers chromadb requests kaggle
+pip install pandas numpy sentence-transformers chromadb requests kaggle ollama fastapi pydantic
 ```
 
 ---
@@ -147,36 +147,36 @@ ollama run phi3
 
 ---
 
-## Running the Pipeline
+## Running the Application
 
-### Step 1 — Run ETL
-
-```
-python src/etl_pipeline.py
-```
-
----
-
-### Step 2 — Generate documents
+### Step 1 — In a different terminal from the ollama above, run
 
 ```
-python src/generate_docs.py
+uvicorn main:app --reload
 ```
 
 ---
 
-### Step 3 — Create embeddings
+### Step 2 — In a different terminal, run the frontend
 
 ```
-python src/embed.py
+npm run dev
 ```
 
 ---
 
-### Step 4 — Run RAG queries
+### Step 3 — Open the frontend
 
 ```
-python src/rag.py
+http://localhost:5173/
+```
+
+---
+
+### Step 4 — Click on one of the queries and wait for the LLM's answer!
+
+```
+You will also see it printed on the backend terminal
 ```
 
 ---
