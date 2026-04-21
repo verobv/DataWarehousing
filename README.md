@@ -219,17 +219,6 @@ You will also see it printed on the backend terminal
         └──────────────┘
 ```
 
----
-
-## Future Improvements
-
-* Smart query routing (time vs category vs region)
-* Metadata filtering in retrieval
-* Evaluation metrics for answer quality
-* Dashboard (Streamlit)
-
----
-
 ## Notes
 
 * Use `python`, not `python3` on Windows (Anaconda environments)
