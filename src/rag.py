@@ -1,26 +1,14 @@
 import pandas as pd
 from sentence_transformers import SentenceTransformer
-import chromadb
 import ollama
+from embed import run as embed
 
-# 1. Load data
-df = pd.read_csv("data/processed/superstore_cleaned.csv")
+# get from embed 
 
-# 2. Create simple text documents
-docs = [
-    f"Order in {row['city']} ({row['region']}): {row['category']} - {row['sales']}$ sales, {row['profit']}$ profit"
-    for _, row in df.iterrows()
-]
-
-# 3. Embeddings
-model = SentenceTransformer("all-MiniLM-L6-v2")
-embeddings = model.encode(docs).tolist()
-
-# 4. Store in ChromaDB
-client = chromadb.Client()
-collection = client.create_collection("sales")
+client, collection, docs, embeddings, model = embed()
 
 def add_in_batches(collection, docs, embeddings, batch_size=1000):
+    
     for i in range(0, len(docs), batch_size):
         batch_docs = docs[i:i + batch_size]
         batch_embeddings = embeddings[i:i + batch_size]
@@ -36,7 +24,8 @@ add_in_batches(collection, docs, embeddings)
 
 def rag_query(query: str) -> str:
 
-    # 5. Query
+    # query
+
     query_emb = model.encode([query]).tolist()
 
     results = collection.query(
@@ -46,7 +35,8 @@ def rag_query(query: str) -> str:
 
     context = "\n".join(results["documents"][0])
 
-    # 6. LLM (Ollama)
+    # Ollama 
+    
     prompt = f"""
     Answer the question using ONLY the context.
 

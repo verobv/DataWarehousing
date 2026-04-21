@@ -6,53 +6,55 @@ from chromadb.config import Settings
 from chunking import run as get_docs
 import json
 
-# -------------------------
-# CONFIG
-# -------------------------
+# config
+
 VECTOR_STORE_DIR = "data/vectorstore"
 COLLECTION_NAME = "sales_docs"
 EMBED_MODEL = "all-MiniLM-L6-v2"
 BATCH_SIZE = 256
 
-# -------------------------
-# LOGGING SETUP
-# -------------------------
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
-# -------------------------
-# EMBEDDING
-# -------------------------
+# embedding 
+
 def load_model():
+    
     logging.info(f"Loading embedding model: {EMBED_MODEL}")
+    
     return SentenceTransformer(EMBED_MODEL)
 
-
 def embed_documents(model, docs):
+    
     logging.info(f"Embedding {len(docs)} documents in batches of {BATCH_SIZE}...")
+    
     embeddings = model.encode(
         docs,
         batch_size=BATCH_SIZE,
         show_progress_bar=True,
         convert_to_numpy=True
     )
+    
     logging.info("Embedding complete.")
+    
     return embeddings
 
+# vector store 
 
-# -------------------------
-# VECTOR STORE
-# -------------------------
 def get_chroma_client():
+    
     os.makedirs(VECTOR_STORE_DIR, exist_ok=True)
+    
     client = chromadb.PersistentClient(path=VECTOR_STORE_DIR)
+    
     return client
 
-
 def store_embeddings(client, docs, embeddings):
-    # Delete existing collection if present (fresh rebuild)
+
+    # delete existing collection if present (fresh rebuild)
+
     existing = [c.name for c in client.list_collections()]
     if COLLECTION_NAME in existing:
         logging.info(f"Deleting existing collection '{COLLECTION_NAME}'...")
@@ -66,7 +68,8 @@ def store_embeddings(client, docs, embeddings):
     ids = [f"doc_{i}" for i in range(len(docs))]
     metadatas = [{"source": "chunking_pipeline", "index": i} for i in range(len(docs))]
 
-    # Upsert in batches to avoid memory issues on large datasets
+    # upsert in batches to avoid memory issues on large datasets
+
     for start in range(0, len(docs), BATCH_SIZE):
         end = min(start + BATCH_SIZE, len(docs))
         collection.add(
@@ -78,13 +81,14 @@ def store_embeddings(client, docs, embeddings):
         logging.info(f"Stored documents {start}–{end - 1}")
 
     logging.info(f"Total documents stored in '{COLLECTION_NAME}': {collection.count()}")
+    
     return collection
 
 
-# -------------------------
-# PIPELINE
-# -------------------------
+# pipeline
+
 def run():
+
     logging.info("Stage 3: Embeddings & Vector Store")
 
     if os.path.exists("data/docs.json"):
@@ -105,8 +109,8 @@ def run():
     collection = store_embeddings(client, docs, embeddings)
 
     logging.info(f"Vector store saved to '{VECTOR_STORE_DIR}'.")
-    return client, collection
-
+    
+    return client, collection, docs, embeddings, model
 
 if __name__ == "__main__":
     run()

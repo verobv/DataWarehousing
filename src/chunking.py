@@ -1,29 +1,18 @@
 import pandas as pd
 import json
+from etl_pipeline import run_pipeline as get_df 
 
-# -------------------------
-# Load data
-# -------------------------
-def load_data(path):
-    return pd.read_csv(path, parse_dates=["order_date", "ship_date"])
+# row-level documents
 
-
-# -------------------------
-# Row-level documents
-# -------------------------
 def create_row_docs(df):
     return df.apply(lambda row: (
         f"Order from {row['order_date'].date()} in {row['region']} region. "
         f"Category: {row['category']}, Sales: ${row['sales']:.2f}, Profit: ${row['profit']:.2f}."
     ), axis=1).tolist()
 
+# aggregations
 
-# -------------------------
-# Aggregations
-# -------------------------
 def create_monthly_docs(df):
-    df["year"] = df["order_date"].dt.year
-    df["month"] = df["order_date"].dt.month
 
     monthly = df.groupby(["year", "month"]).agg({
         "sales": "sum",
@@ -35,16 +24,13 @@ def create_monthly_docs(df):
         f"and profit was ${row['profit']:.2f}."
     ), axis=1).tolist()
 
+# chunking (hybrid) - small docs are unchanged while large docs are split
 
-# -------------------------
-# Chunking (hybrid)
-# -------------------------
 def chunk_text(text, size=300, overlap=50):
     chunks = []
     for i in range(0, len(text), size - overlap):
         chunks.append(text[i:i + size])
     return chunks
-
 
 def apply_chunking(docs):
     chunked = []
@@ -55,12 +41,10 @@ def apply_chunking(docs):
             chunked.extend(chunk_text(doc))
     return chunked
 
+# pipeline
 
-# -------------------------
-# Pipeline
-# -------------------------
 def run():
-    df = load_data("data/processed/superstore_cleaned.csv")
+    df = get_df()
 
     row_docs = create_row_docs(df)
     monthly_docs = create_monthly_docs(df)
@@ -73,7 +57,6 @@ def run():
         json.dump(chunked_docs, f)
 
     return chunked_docs
-
 
 if __name__ == "__main__":
     docs = run()
