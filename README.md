@@ -232,6 +232,7 @@ You will also see it printed on the backend terminal
 Verónica — Data Analyst transitioning into Software Engineering
 Focus: Data Engineering, Backend Systems, and Applied AI
 
-Prerna - 
+Prerna - Database engineer transitioning to a Data Engineer role
+Focus: Data Engineering, Azure Cloud and Big Data
 
 ---
