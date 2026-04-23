@@ -1,50 +1,42 @@
-import pandas as pd
-from sentence_transformers import SentenceTransformer
 import ollama
 from embed import run as embed
+from embed import query as get_results
 
 # get from embed 
 
-client, collection, docs, embeddings, model = embed()
-
-def add_in_batches(collection, docs, embeddings, batch_size=1000):
-    
-    for i in range(0, len(docs), batch_size):
-        batch_docs = docs[i:i + batch_size]
-        batch_embeddings = embeddings[i:i + batch_size]
-        batch_ids = [str(j) for j in range(i, i + len(batch_docs))]
-
-        collection.add(
-            documents=batch_docs,
-            embeddings=batch_embeddings,
-            ids=batch_ids
-        )
-
-add_in_batches(collection, docs, embeddings)
+client, collection, model = embed()
 
 def rag_query(query: str) -> str:
 
     # query
 
-    query_emb = model.encode([query]).tolist()
+    results = get_results(collection, model, query, 5)
 
-    results = collection.query(
-        query_embeddings=query_emb,
-        n_results=5
-    )
+    retrived_docs = results['documents'][0]
 
-    context = "\n".join(results["documents"][0])
+    context = "\n".join(retrived_docs)
 
     # Ollama 
     
     prompt = f"""
-    Answer the question using ONLY the context.
+    You are a data analyst assistant.
+
+    RULES:
+    - Do NOT infer or guess missing information
+    - Use ONLY the provided context to answer the question
+    - If ranking is shown, return it exactly as listed
+    - Do not mix regions and cities
+    - If the answer is not explicitly in the context, say "I don't have enough information."
+
+    Be precise and analytical.
 
     Context:
     {context}
 
     Question:
     {query}
+
+    Answer:
     """
 
     response = ollama.chat(

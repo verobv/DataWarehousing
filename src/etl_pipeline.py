@@ -26,7 +26,7 @@ def download_dataset():
 
     if os.path.exists(os.path.join(RAW_DIR, CSV_NAME)):
         logging.info("Dataset already exists. Skipping download.")
-        return
+        return None
 
     logging.info("Downloading dataset from Kaggle...")
     os.makedirs(RAW_DIR, exist_ok=True)
@@ -93,6 +93,7 @@ def transform_data():
 
     # add useful columns - feature engineering
 
+    df["profit_margin"] = df["profit"] / df["sales"]
     df["year"] = df["order_date"].dt.year
     df["month"] = df["order_date"].dt.month
 
