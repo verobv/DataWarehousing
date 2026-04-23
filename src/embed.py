@@ -13,7 +13,6 @@ VECTOR_STORE_DIR = "data/vectorstore"
 COLLECTION_NAME = "sales_docs"
 EMBED_MODEL = "all-MiniLM-L6-v2"
 BATCH_SIZE = 256
-RESET_COLLECTION = True
 
 logging.basicConfig(
     level=logging.INFO,
@@ -72,12 +71,8 @@ def store_embeddings(client, docs, embeddings, metadatas):
 
     existing = [c.name for c in client.list_collections()]
     if COLLECTION_NAME in existing:
-        if RESET_COLLECTION:
-            logging.info(f"Deleting existing collection '{COLLECTION_NAME}'...")
-            client.delete_collection(COLLECTION_NAME)
-        else:
-            logging.info(f"Using existing collection '{COLLECTION_NAME}'")
-            return client.get_collection(COLLECTION_NAME)
+        logging.info(f"Deleting existing collection '{COLLECTION_NAME}'...")
+        client.delete_collection(COLLECTION_NAME)
 
     collection = client.create_collection(
         name=COLLECTION_NAME,
