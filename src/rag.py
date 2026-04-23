@@ -41,7 +41,7 @@ def rag_query(query: str) -> str:
 
     response = ollama.chat(
         model="phi3",
-        temperature=0,
+        options={"temperature": 0},
         messages=[{"role": "user", "content": prompt}]
     )
 
