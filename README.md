@@ -39,8 +39,8 @@ The pipeline consists of:
 ## Example Queries
 
 * “Which region has the highest sales?”
-* “What is the most profitable category?”
-* “How did sales evolve over time?”
+* “How has profit margin changed over time?”
+* “Which products are frequently sold at a discount?”
 
 ---
 
@@ -49,6 +49,9 @@ The pipeline consists of:
 ```
 project/
 │
+├── frontend/
+|   ├── ragApp              # React framework
+|
 ├── data/
 │   ├── raw/                # Raw downloaded data
 │   ├── processed/          # Cleaned dataset
@@ -59,6 +62,7 @@ project/
 │   ├── embed.py            # Create embeddings
 │   ├── rag.py              # RAG query pipeline
 │
+├── .gitignore
 ├── requirements.txt
 ├── README.md
 ```
@@ -104,7 +108,7 @@ pip install -r requirements.txt
 Or manually:
 
 ```
-pip install pandas numpy sentence-transformers chromadb requests kaggle ollama fastapi pydantic
+pip install pandas numpy sentence-transformers chromadb requests kaggle ollama fastapi pydantic tiktoken
 ```
 
 ---
@@ -222,7 +226,7 @@ You will also see it printed on the backend terminal
 ## Notes
 
 * Use `python`, not `python3` on Windows (Anaconda environments)
-* If CSV fails to load, ensure encoding is set to `latin-1`
+* If CSV fails to load, ensure encoding is set to `latin-1` (done in ETL pypeline)
 * Make sure Ollama is running before querying
 
 ---
